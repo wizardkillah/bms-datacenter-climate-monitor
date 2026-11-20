@@ -6,6 +6,7 @@ Derivado del cliente del dashboard de gases clinicos.
 """
 import socket
 import struct
+import time
 
 BACNET_PORT = 47808
 
@@ -32,6 +33,7 @@ class ClienteBacnet:
 
     def __init__(self, ip_local=None, timeout=1.0):
         self._invoke = 0
+        self._timeout = timeout
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         if ip_local:
             try:
@@ -103,15 +105,69 @@ class ClienteBacnet:
             return txt or None
         return None
 
+    @staticmethod
+    def _apdu(data):
+        """Normaliza la respuesta a BVLC + NPDU de 2 bytes + APDU.
+
+        Devuelve (datos normalizados, invoke-id, tipo de PDU) o (None, None, None).
+        """
+        if len(data) < 8 or data[0] != 0x81 or data[4] != 0x01:
+            return None, None, None
+        ctrl, i = data[5], 6
+        if ctrl & 0x20:                         # DNET + DLEN + DADR
+            i += 3 + data[i + 2] if len(data) > i + 2 else len(data)
+        if ctrl & 0x08:                         # SNET + SLEN + SADR
+            i += 3 + data[i + 2] if len(data) > i + 2 else len(data)
+        if ctrl & 0x20:                         # hop count
+            i += 1
+        if ctrl & 0x80 or len(data) < i + 2:    # mensaje de capa de red
+            return None, None, None
+        return data[:4] + b"\x01\x00" + data[i:], data[i + 1], data[i] & 0xF0
+
+    def _vaciar(self):
+        """Descarta respuestas atrasadas que quedaron en el socket."""
+        self.sock.setblocking(False)
+        try:
+            while True:
+                self.sock.recvfrom(1500)
+        except OSError:
+            pass
+        finally:
+            self.sock.settimeout(self._timeout)
+
     def leer(self, ip, tipo, instancia, propiedad="present-value"):
-        """Lee una propiedad. Devuelve el valor decodificado o None."""
+        """Lee una propiedad. Devuelve el valor decodificado o None.
+
+        Solo acepta la respuesta a ESTA petición (misma IP e invoke-id). Antes se
+        tomaba el primer datagrama: con el cliente permanente del monitor, una
+        sola respuesta atrasada corría la cola en uno y cada punto pasaba a
+        mostrar el valor del anterior, para siempre (pasó en clima el 03-11-2026).
+        """
         num = TIPO_NUM[tipo] if isinstance(tipo, str) else tipo
         pkt = self._paquete(num, instancia, PROP[propiedad])
+        invoke = self._invoke
+        fin = time.monotonic() + self._timeout
         try:
+            self._vaciar()
             self.sock.sendto(pkt, (ip, BACNET_PORT))
-            data, _ = self.sock.recvfrom(1500)
+            while True:
+                resto = fin - time.monotonic()
+                if resto <= 0:
+                    return None
+                self.sock.settimeout(resto)
+                crudo, origen = self.sock.recvfrom(1500)
+                if origen[0] != ip:
+                    continue
+                data, inv, pdu = self._apdu(crudo)
+                if data is None or inv != invoke:
+                    continue                    # respuesta vieja u otra cosa
+                if pdu != 0x30:                 # Error / Reject / Abort
+                    return None
+                break
         except Exception:
             return None
+        finally:
+            self.sock.settimeout(self._timeout)
         if propiedad in ("object-name", "description"):
             return self._texto(data)
         clase, valor = self._valor(data)

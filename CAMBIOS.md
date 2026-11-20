@@ -1,5 +1,14 @@
 # Cambios
 
+## Sin publicar — corrección del cliente BACnet
+
+- `bacnet.py` solo acepta la respuesta a la petición en curso (misma IP e invoke-id) y descarta
+  las atrasadas. Antes tomaba el primer datagrama: tras un timeout, la respuesta tardía se
+  asignaba a la lectura siguiente y cada punto mostraba el valor del anterior. Es la misma
+  corrección que ya tenían combustible y gases (regresión del 03-11-2026).
+- Nueva prueba `tests/test_bacnet_desfase.py` (3 casos). Total: 36 pruebas.
+- Para llevarla al PC del hospital hay que volver a empaquetar (`herramientas/empaquetar.py`).
+
 ## 1.1.1 — 2026-09-29 · paquete para el PC del hospital sin .bat
 
 - el antivirus bloquea los `.bat` en el PC del hospital, así que se eliminaron. El arranque es con

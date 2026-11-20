@@ -34,7 +34,7 @@ Si el datacenter de un hospital se calienta, la caída de los servidores afecta 
 | Lógica | `alarmas.py`: clasificación, retardo, histéresis y validación, sin E/S y fácil de probar |
 | Servidor | `ThreadingHTTPServer` con protecciones propias, sin framework |
 | Frontend | HTML + JS sin CDN, con alarma sonora opcional |
-| Pruebas | **33 pruebas** sin red, 16 de ellas de seguridad |
+| Pruebas | **36 pruebas** sin red: 16 de seguridad y 3 de regresión del cliente BACnet |
 
 ## Probarlo
 
