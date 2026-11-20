@@ -1,0 +1,31 @@
+{
+ "zonas": {
+  "datacenter": {
+   "temp_alta": 22.0,
+   "temp_baja": 15.0,
+   "hum_alta": 60.0,
+   "hum_baja": 40.0
+  },
+  "sala_electrica": {
+   "temp_alta": 28.0,
+   "temp_baja": 10.0,
+   "hum_alta": 80.0,
+   "hum_baja": 20.0
+  }
+ },
+ "histeresis_temp": 0.5,
+ "histeresis_hum": 2.0,
+ "retardo_seg": 60,
+ "rango_valido_temp": [
+  10.0,
+  50.0
+ ],
+ "rango_valido_hum": [
+  15.0,
+  95.0
+ ],
+ "discrepancia_temp": 2.0,
+ "discrepancia_hum": 10.0,
+ "sonido": true,
+ "sensores_activos": {}
+}

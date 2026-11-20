@@ -1,0 +1,102 @@
+{
+ "sala": "Sala Datacenter",
+ "ubicacion": "Edificio D · Piso 3",
+ "estacion": "TCC-D01",
+ "modelo": "SAUTER modulo 525",
+ "ip": "192.0.2.38",
+ "mac": "00:00:5E:00:53:01:3C",
+ "device_id": 38,
+ "ip_local": "",
+ "intervalo_seg": 10,
+ "guardar_cada_seg": 60,
+ "retencion_dias": 730,
+ "clave_ajustes": "",
+ "zonas": {
+  "datacenter": "Sala datacenter",
+  "sala_electrica": "Sala eléctrica"
+ },
+ "fieldserver": {
+  "ip": "192.0.2.75",
+  "nombre": "FS-PRECISION",
+  "marca": "controlador de precisión (Modbus)"
+ },
+ "sensores": [
+  {
+   "id": "s2",
+   "nombre": "Sonda sala datacenter",
+   "zona": "datacenter",
+   "fuente": "bacnet",
+   "temperatura": {
+    "tipo": "analogInput",
+    "instancia": 38,
+    "nombre_bacnet": "TEMP_P3_232"
+   },
+   "humedad": {
+    "tipo": "analogInput",
+    "instancia": 40,
+    "nombre_bacnet": "HUM_P3_234"
+   }
+  },
+  {
+   "id": "p30",
+   "nombre": "Equipo precisión N30",
+   "zona": "datacenter",
+   "fuente": "fieldserver",
+   "nodo": 30,
+   "temperatura": {
+    "campo": "retorno_t",
+    "nombre_bacnet": "ReturnTemperature_30"
+   },
+   "humedad": {
+    "campo": "retorno_hr",
+    "nombre_bacnet": "ReturnHumidity_30"
+   }
+  },
+  {
+   "id": "p31",
+   "nombre": "Equipo precisión N31",
+   "zona": "datacenter",
+   "fuente": "fieldserver",
+   "nodo": 31,
+   "temperatura": {
+    "campo": "retorno_t",
+    "nombre_bacnet": "ReturnTemperature_31"
+   },
+   "humedad": {
+    "campo": "retorno_hr",
+    "nombre_bacnet": "ReturnHumidity_31"
+   }
+  },
+  {
+   "id": "p32",
+   "nombre": "Equipo precisión N32",
+   "zona": "datacenter",
+   "fuente": "fieldserver",
+   "nodo": 32,
+   "temperatura": {
+    "campo": "retorno_t",
+    "nombre_bacnet": "ReturnTemperature_32"
+   },
+   "humedad": {
+    "campo": "retorno_hr",
+    "nombre_bacnet": "ReturnHumidity_32"
+   }
+  },
+  {
+   "id": "s1",
+   "nombre": "Sonda sala eléctrica",
+   "zona": "sala_electrica",
+   "fuente": "bacnet",
+   "temperatura": {
+    "tipo": "analogInput",
+    "instancia": 37,
+    "nombre_bacnet": "TEMP_P3_231"
+   },
+   "humedad": {
+    "tipo": "analogInput",
+    "instancia": 39,
+    "nombre_bacnet": "HUM_P3_233"
+   }
+  }
+ ]
+}

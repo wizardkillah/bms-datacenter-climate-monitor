@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Clima Datacenter — Hospital Demo</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='13' y='3' width='6' height='18' rx='3' fill='%23f9a825'/%3E%3Ccircle cx='16' cy='24' r='6' fill='%23f9a825'/%3E%3C/svg%3E" />
+<link rel="stylesheet" href="/css/estilos.css" />
+</head>
+<body>
+
+<header class="barra">
+  <div class="logo-lockup">@@LOGO_SVG@@</div>
+  <div class="titulo">
+    <h1>Clima Sala Datacenter</h1>
+    <span class="sub" id="sub">Edificio D · Piso 3</span>
+  </div>
+  <div class="reloj">
+    <span id="ts">—</span>
+    <span class="pulso" id="pulso" title="Comunicación con la estación Sauter"></span>
+    <span class="pulso" id="pulso-fs" title="Comunicación con los equipos de precisión"></span>
+  </div>
+</header>
+
+<section id="banner" class="banner banner-inicio">
+  <span class="banner-icono" id="banner-icono">●</span>
+  <span class="banner-texto" id="banner-texto">Conectando…</span>
+  <span class="banner-acciones">
+    <button id="btn-sonido" class="btn btn-sec" title="Sonido de alarma en este navegador">🔔 Sonido</button>
+    <button id="btn-reconocer" class="btn btn-alarma oculto">Reconocer alarmas</button>
+  </span>
+</section>
+
+<main class="contenido">
+
+  <section id="zonas"></section>
+
+  <section class="panel graficos">
+    <div class="panel-cab">
+      <h2>Tendencia</h2>
+      <div class="rango" id="rango">
+        <button data-h="1">1 h</button>
+        <button data-h="6">6 h</button>
+        <button data-h="24" class="activo">24 h</button>
+        <button data-h="168">7 días</button>
+        <button data-h="720">30 días</button>
+      </div>
+    </div>
+    <div id="graficos"></div>
+    <div class="tooltip oculto" id="tooltip"></div>
+  </section>
+
+  <div class="dos-col">
+    <section class="panel">
+      <div class="panel-cab"><h2>Setpoints de alarma</h2></div>
+      <form id="form-ajustes" class="ajustes" autocomplete="off">
+        <div id="limites-zonas" class="limites-zonas"></div>
+        <fieldset class="ancho">
+          <legend>Confirmación, cruce y sensores</legend>
+          <label>Histéresis temp. (°C) <input type="number" step="0.1" min="0" max="10" name="histeresis_temp" required></label>
+          <label>Histéresis hum. (%HR) <input type="number" step="0.5" min="0" max="10" name="histeresis_hum" required></label>
+          <label>Retardo de alarma (s) <input type="number" step="1" min="0" max="3600" name="retardo_seg" required></label>
+          <label>Discrepancia máx. temp. (°C) <input type="number" step="0.1" min="0.1" max="50" name="discrepancia_temp" required></label>
+          <label>Discrepancia máx. hum. (%HR) <input type="number" step="0.5" min="0.5" max="50" name="discrepancia_hum" required></label>
+          <label>Rango válido temp. <span class="par"><input type="number" step="0.5" name="rv_temp_lo"> a <input type="number" step="0.5" name="rv_temp_hi"></span></label>
+          <label>Rango válido hum. <span class="par"><input type="number" step="0.5" name="rv_hum_lo"> a <input type="number" step="0.5" name="rv_hum_hi"></span></label>
+          <div id="activos" class="activos"></div>
+        </fieldset>
+        <div class="acciones">
+          <input type="password" name="clave" placeholder="Clave" class="oculto" id="clave-ajustes">
+          <button type="button" class="btn btn-sec" id="btn-deshacer">Descartar</button>
+          <button type="submit" class="btn">Guardar setpoints</button>
+        </div>
+        <p class="nota" id="msg-ajustes"></p>
+      </form>
+    </section>
+
+    <section class="panel">
+      <div class="panel-cab"><h2>Descargar Excel</h2></div>
+      <form id="form-excel" class="excel">
+        <label>Desde <input type="date" name="desde" required></label>
+        <label>Hasta <input type="date" name="hasta" required></label>
+        <label>Resolución
+          <select name="paso">
+            <option value="60">1 minuto</option>
+            <option value="300">5 minutos</option>
+            <option value="900" selected>15 minutos</option>
+            <option value="3600">1 hora</option>
+          </select>
+        </label>
+        <div class="atajos">
+          <button type="button" data-d="0">Hoy</button>
+          <button type="button" data-d="7">7 días</button>
+          <button type="button" data-d="30">30 días</button>
+          <button type="button" data-mes="1">Mes anterior</button>
+        </div>
+        <button type="submit" class="btn">⬇ Descargar .xlsx</button>
+        <p class="nota">Incluye resumen por sala (mín/prom/máx y minutos fuera de setpoint), lecturas con celdas coloreadas, gráficos, estado de los equipos de precisión y registro de eventos.</p>
+      </form>
+
+      <div class="panel-cab mt"><h2>Estadística del período</h2></div>
+      <table class="stats" id="stats"><tbody><tr><td class="vacio">—</td></tr></tbody></table>
+    </section>
+  </div>
+
+  <section class="panel">
+    <div class="panel-cab">
+      <h2>Registro de eventos</h2>
+      <label class="conmutador"><input type="checkbox" id="solo-alarmas"> Solo alarmas</label>
+    </div>
+    <div class="tabla-scroll">
+      <table id="tabla-eventos">
+        <thead><tr><th>Fecha y hora</th><th>Evento</th><th>Origen</th><th>Valor</th><th>Límite / ref.</th><th>Detalle</th><th>Reconocido</th></tr></thead>
+        <tbody><tr><td colspan="7" class="vacio">Sin eventos</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<footer class="pie">
+  <span id="salud">—</span>
+  <span>Clima Datacenter v@@VERSION@@ · Hospital Demo</span>
+</footer>
+
+<script src="/js/app.js"></script>
+</body>
+</html>
